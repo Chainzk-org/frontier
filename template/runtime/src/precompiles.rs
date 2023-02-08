@@ -6,12 +6,6 @@ use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 
-use {
-	alloc::{format, vec::Vec},
-	czk_precompiles::{AnemioJave381Input4, AnonymousTransactionVerifier},
-	fp_evm::{ExitError, ExitSucceed, LinearCostPrecompile, PrecompileFailure},
-};
-
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 
 impl<R> FrontierPrecompiles<R>
@@ -30,8 +24,6 @@ where
 			hash(5),
 			hash(1024),
 			hash(1025),
-			hash(5000),
-			hash(5001),
 		]
 	}
 }
@@ -50,8 +42,6 @@ where
 			// Non-Frontier specific nor Ethereum precompiles :
 			a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
 			a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
-			a if a == hash(5000) => Some(AnemoiJive::execute(handle)),
-			a if a == hash(5001) => Some(AnonymousVerifier::execute(handle)),
 			_ => None,
 		}
 	}
@@ -63,42 +53,4 @@ where
 
 fn hash(a: u64) -> H160 {
 	H160::from_low_u64_be(a)
-}
-
-pub struct AnemoiJive;
-
-impl LinearCostPrecompile for AnemoiJive {
-	const BASE: u64 = 3000;
-	const WORD: u64 = 0;
-	fn execute(input: &[u8], _: u64) -> Result<(ExitSucceed, Vec<u8>), PrecompileFailure> {
-		let jave = AnemioJave381Input4::new().map_err(|e| PrecompileFailure::Error {
-			exit_status: ExitError::Other(format!("{:?}", e).into()),
-		})?;
-		jave.call(input)
-			.map(|output| (ExitSucceed::Stopped, output))
-			.map_err(|e| PrecompileFailure::Error {
-				exit_status: ExitError::Other(
-					alloc::format!("AnemioJave381Input4 call error:{:?}", e).into(),
-				),
-			})
-	}
-}
-
-pub struct AnonymousVerifier;
-
-impl LinearCostPrecompile for AnonymousVerifier {
-	const BASE: u64 = 3000;
-	const WORD: u64 = 0;
-	fn execute(input: &[u8], _: u64) -> Result<(ExitSucceed, Vec<u8>), PrecompileFailure> {
-		let jave = AnonymousTransactionVerifier::new().map_err(|e| PrecompileFailure::Error {
-			exit_status: ExitError::Other(format!("{:?}", e).into()),
-		})?;
-		jave.call(input)
-			.map(|output| (ExitSucceed::Stopped, output))
-			.map_err(|e| PrecompileFailure::Error {
-				exit_status: ExitError::Other(
-					format!("AnonymousTransactionVerifier call error:{:?}", e).into(),
-				),
-			})
-	}
 }
