@@ -56,6 +56,10 @@ pallet-evm-precompile-sha3fips = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
 pallet-hotfix-sufficients = { workspace = true }
 
+getrandom = { version = "0.2", features = ["js"] }
+czk-precompiles = { git = "ssh://git@github.com.chainzk/Chainzk-org/czk-precompiles-wapper" }
+fp-evm = { workspace = true }
+
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }
 
